@@ -1,3 +1,7 @@
+// 時間のパースの設定上スクリプトの実行環境がJSTでなくてはならない
+// Logger.log('hoge'); 
+// の時のログの表示がJSTとなっていることが実行条件となる。
+
 /**
  * 作成シートでのコンテスト作成を実行する
  */
@@ -28,11 +32,11 @@ function createNewVirtualCotest() {
 
   // 問題の全レベルを取得
   var taskLevels = [];
-  var taskLevelRegex = new RegExp('<td class="text-center no-break"><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>([A-Z]+)</a></td>', 'g'); 
+  var taskLevelRegex = new RegExp('<td class="text-center no-break"><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>([A-Z]+)</a></td>', 'g');
   var isEndTask = true;
-  while(isEndTask) {
+  while (isEndTask) {
     var selectedLevel = taskLevelRegex.exec(contentTasks);
-    if(selectedLevel) {
+    if (selectedLevel) {
       taskLevels.push(selectedLevel[1]);
     } else {
       isEndTask = false;
@@ -42,11 +46,11 @@ function createNewVirtualCotest() {
   // 問題の全タイトルとリンクを取得
   var tasks = [];
   var taskLinks = [];
-  var taskRegex = new RegExp('<td><a href=\'(/contests/[a-z0-9_]+/tasks/[a-z0-9_]+)\'>(.+)</a></td>', 'g'); 
+  var taskRegex = new RegExp('<td><a href=\'(/contests/[a-z0-9_]+/tasks/[a-z0-9_]+)\'>(.+)</a></td>', 'g');
   isEndTask = true;
-  while(isEndTask) {
+  while (isEndTask) {
     var selectedTask = taskRegex.exec(contentTasks);
-    if(selectedTask) {
+    if (selectedTask) {
       tasks.push(selectedTask[2]);
       taskLinks.push(selectedTask[1]);
     } else {
@@ -56,7 +60,7 @@ function createNewVirtualCotest() {
 
   // 問題とレベルを結合しながら、表と問題へのリンクを更新
   for (var index = 0; index < tasks.length; index++) {
-    tasks[index] = taskLevels[index] + ' - ' +  tasks[index];
+    tasks[index] = taskLevels[index] + ' - ' + tasks[index];
     sheet.getRange(5, 4 + index).setFormula(
       '=HYPERLINK("https://beta.atcoder.jp' + taskLinks[index] + '","' + tasks[index] + '")');
   }
@@ -79,6 +83,22 @@ function join() {
 
   Browser.msgBox(Session.getActiveUser() +
     'を追加しました。AtCoder IDをシートに記入してください。', Browser.Buttons.OK);
+}
+
+/**
+ * AtCoder形式のString文字列をパースしてDateオブジェクトにする
+ * @param {*} dataString 例: 2018-04-25 18:09:54+0900
+ */
+function parseDate(dataString) {
+  var r = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\+0900/.exec(dataString);
+  return new Date(
+    parseInt(r[1], 10),
+    parseInt(r[2], 10) - 1,
+    parseInt(r[3], 10),
+    parseInt(r[4], 10),
+    parseInt(r[5], 10),
+    parseInt(r[6], 10)
+  );
 }
 
 /**
@@ -108,13 +128,14 @@ function updateStatus() {
 
   // コンテストID, 開始, 終了を取得する
   var contestId = sheet.getRange('B2').getValue();
-  var beginTime = sheet.getRange('B3').getValue();
-  var endTime = sheet.getRange('B4').getValue();
+  var beginTime = sheet.getRange('B3').getValue(); // Date
+  var endTime = sheet.getRange('B4').getValue(); // Date
 
   // 全ユーザーの提出情報をオブジェクトにまとめる
   // Key: ユーザー名 Value: Submission[]
   // Submission: {time, task, id, score, status}
   var allSubmissions = {};
+  var allSelectedSubmissions = {};
   // Key: ユーザー名 Value: {taskScoreMaxs: {}, notAcCounts: {}, totalScore}
   var allResult = {};
 
@@ -127,12 +148,12 @@ function updateStatus() {
 
     // 時間を取得
     var times = [];
-    var timesRegex = new RegExp('<td class="no-break"><time class=\'fixtime fixtime-second\'>(.+)</time></td>', 'g'); 
+    var timesRegex = new RegExp('<td class="no-break"><time class=\'fixtime fixtime-second\'>(.+)</time></td>', 'g');
     var isEnd = true;
-    while(isEnd) {
+    while (isEnd) {
       var selectedTime = timesRegex.exec(contentTasks);
-      if(selectedTime) {
-        times.push(selectedTime[1]);
+      if (selectedTime) {
+        times.push(parseDate(selectedTime[1]));
       } else {
         isEnd = false;
       }
@@ -140,11 +161,11 @@ function updateStatus() {
 
     // 問題を取得
     var submittedTasks = [];
-    var submittedTaskssRegex = new RegExp('<td><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>(.+)</a></td>', 'g'); 
+    var submittedTaskssRegex = new RegExp('<td><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>(.+)</a></td>', 'g');
     isEnd = true;
-    while(isEnd) {
+    while (isEnd) {
       var selectedTask = submittedTaskssRegex.exec(contentTasks);
-      if(selectedTask) {
+      if (selectedTask) {
         submittedTasks.push(selectedTask[1]);
       } else {
         isEnd = false;
@@ -154,11 +175,11 @@ function updateStatus() {
     // スコアとIDを取得
     var scores = [];
     var ids = [];
-    var scoresRegex = new RegExp('<td class="text-right submission-score" data-id="([0-9]+)">([0-9]+)</td>', 'g'); 
+    var scoresRegex = new RegExp('<td class="text-right submission-score" data-id="([0-9]+)">([0-9]+)</td>', 'g');
     isEnd = true;
-    while(isEnd) {
+    while (isEnd) {
       var selectedScore = scoresRegex.exec(contentTasks);
-      if(selectedScore) {
+      if (selectedScore) {
         scores.push(selectedScore[2]);
         ids.push(selectedScore[1]);
       } else {
@@ -168,11 +189,11 @@ function updateStatus() {
 
     // ステータス
     var statuses = [];
-    var statusesRegex = new RegExp('<td class=\'text-center\'><span class=\'.+\' aria-hidden=\'true\' data-toggle=\'tooltip\' data-placement=\'top\' title=".+">(.+)</span></td>', 'g'); 
+    var statusesRegex = new RegExp('<td class=\'text-center\'><span class=\'.+\' aria-hidden=\'true\' data-toggle=\'tooltip\' data-placement=\'top\' title=".+">(.+)</span></td>', 'g');
     isEnd = true;
-    while(isEnd) {
+    while (isEnd) {
       var selectedStatus = statusesRegex.exec(contentTasks);
-      if(selectedStatus) {
+      if (selectedStatus) {
         statuses.push(selectedStatus[1]);
       } else {
         isEnd = false;
@@ -180,43 +201,50 @@ function updateStatus() {
     }
 
     var userSubmissions = [];
+    var selectedUserSubmissions = [];
     for (var j = 0; j < times.length; j++) {
-      userSubmissions.push({
-        time : times[j],
-        task : submittedTasks[j],
-        id : ids[j],
-        score : scores[j],
-        status : statuses[j]
-      });
+      var submission = {
+        time: times[j],
+        task: submittedTasks[j],
+        id: ids[j],
+        score: scores[j],
+        status: statuses[j]
+      };
+      userSubmissions.push(submission);
+
+      if (beginTime <= submission.time && submission.time <= endTime) {
+        selectedUserSubmissions.push(submission);
+      }
     }
     allSubmissions[user] = userSubmissions;
+    allSelectedSubmissions[user] = selectedUserSubmissions;
 
     // 集計結果
     var result = {
-      taskScoreMaxs : {},
-      notAcCounts : {},
-      totalScore : 0
+      taskScoreMaxs: {},
+      notAcCounts: {},
+      totalScore: 0
     };
 
     // それぞれのスコア最大値やAC以外の数をを計算
     for (var k = 0; k < submittedTasks.length; k++) {
       var task = submittedTasks[k];
-      if(!result.taskScoreMaxs[task]) {
+      if (!result.taskScoreMaxs[task]) {
         result.taskScoreMaxs[task] = 0;
       }
-      if(!result.notAcCounts[task]) {
+      if (!result.notAcCounts[task]) {
         result.notAcCounts[task] = 0;
       }
 
-      for (var l = 0; l < userSubmissions.length; l++) {
-        var submission = userSubmissions[l];
-        if(task === submission.task) {
+      for (var l = 0; l < selectedUserSubmissions.length; l++) {
+        var submission = selectedUserSubmissions[l];
+        if (task === submission.task) {
           var score = parseInt(submission.score);
-          if(score > result.taskScoreMaxs[task]) {
+          if (score > result.taskScoreMaxs[task]) {
             result.taskScoreMaxs[task] = score;
           }
 
-          if(submission.status !== 'AC') {
+          if (submission.status !== 'AC') {
             result.notAcCounts[task] += 1;
           }
         }
@@ -225,7 +253,7 @@ function updateStatus() {
 
     var totalScore = 0;
     for (var m = 0; m < tasks.length; m++) {
-      if(isFinite(result.taskScoreMaxs[tasks[m]])) {
+      if (isFinite(result.taskScoreMaxs[tasks[m]])) {
         totalScore += result.taskScoreMaxs[tasks[m]];
       }
     }
@@ -247,12 +275,14 @@ function updateStatus() {
     }
     sheet.getRange(6 + index, 3, 1, 1 + tasks.length).setValues(values);
 
-    // TODO 更新時間を保存、1分以内のものを無視する
+    // TODO WANT ユーザーごとの更新時間をPropertiesServiceに保存、1分以内のものを無視する
   } // user
 
-  // TODO 時間で絞る
-
+  // Logger.log('allSubmissions:');
   // Logger.log(allSubmissions);
+  Logger.log('allSelectedSubmissions:');
+  Logger.log(allSelectedSubmissions);
+  Logger.log('allResult:');
   Logger.log(allResult);
   Logger.log(participants.length + '名の参加者の点数の更新を行いました: ' + participants);
 }
