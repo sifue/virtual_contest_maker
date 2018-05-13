@@ -106,6 +106,26 @@ function parseDate(dataString) {
 }
 
 /**
+ * 数値を2桁0埋めした文字列に変換する
+ * @param {*} number 
+ */
+function formatDigit(number) {
+  return ('0' + number).slice(-2);
+}
+
+/**
+ * 直近の点数獲得時間をフォーマットする
+ * @param {*} latestScoreTime 
+ * @param {*} beginTIme 
+ */
+function formatLatestScoreTime(latestScoreTime, beginTime) {
+  var secs = (latestScoreTime.getTime() - beginTime.getTime()) / 1000;
+  var min = Math.floor(secs / 60);
+  var sec = secs % 60;
+  return ' [' + min + ':' + formatDigit(sec) + ']';
+}
+
+/**
  * コンテストの参加者の点数の状況を更新する
  */
 function updateStatus() {
@@ -231,8 +251,10 @@ function updateStatus() {
     // 集計結果
     var result = {
       taskScoreMaxs: {},
+      taskLatestScoreTime: {},
       notAcCounts: {},
-      totalScore: 0
+      totalScore: 0,
+      latestScoreTime: new Date(0)
     };
 
     // それぞれのスコア最大値やAC以外の数をを計算
@@ -254,6 +276,7 @@ function updateStatus() {
           var score = parseInt(submission.score);
           if (score > result.taskScoreMaxs[task]) {
             result.taskScoreMaxs[task] = score;
+            result.taskLatestScoreTime[task] = submission.time;
           }
 
           if (submission.status !== 'AC') {
@@ -263,17 +286,21 @@ function updateStatus() {
       }
     } // task
 
+    // 集計スコアと最終AC時間を取得する
     var totalScore = 0;
     for (var m = 0; m < tasks.length; m++) {
       if (isFinite(result.taskScoreMaxs[tasks[m]])) {
         totalScore += result.taskScoreMaxs[tasks[m]];
+        if (result.taskLatestScoreTime[tasks[m]] > result.latestScoreTime) {
+          result.latestScoreTime = result.taskLatestScoreTime[tasks[m]];
+        }
       }
     }
     result.totalScore = totalScore;
     allResult[user] = result;
 
     // スプレッドシートに更新を行う
-    var values = [[result.totalScore]];
+    var values = [[ '' + result.totalScore + formatLatestScoreTime(result.latestScoreTime, beginTime)]];
     for (var n = 0; n < tasks.length; n++) {
       var value = '';
       if (isFinite(result.taskScoreMaxs[tasks[n]])) {
@@ -281,7 +308,13 @@ function updateStatus() {
       }
 
       if (result.notAcCounts[tasks[n]] > 0) {
-        value += '(' + result.notAcCounts[tasks[n]] + ')';
+        value += ' (' + result.notAcCounts[tasks[n]] + ')';
+      }
+
+      if (isFinite(result.taskScoreMaxs[tasks[n]])
+          && result.taskLatestScoreTime[tasks[n]]
+    ) {
+        value +=  formatLatestScoreTime(result.taskLatestScoreTime[tasks[n]], beginTime);
       }
       values[0].push(value);
     }
@@ -290,8 +323,6 @@ function updateStatus() {
     // TODO WANT ユーザーごとの更新時間をPropertiesServiceに保存、1分以内のものを無視する
     // 今のところ1名5秒程度なので360秒制限は、参加者70名ぐらいにならないと顕在化しなさそう
   } // user
-
-  // TODO 一番最初に解けた時間を表示させる
 
   // Logger.log('allSubmissions:');
   // Logger.log(allSubmissions);
