@@ -303,7 +303,13 @@ function updateStatus() {
     allResult[user] = result;
 
     // スプレッドシートに更新を行う
-    var values = [[ '' + result.totalScore + formatLatestScoreTime(result.latestScoreTime, beginTime)]];
+    var values;
+    if (result.totalScore) {
+      values =  [[ '' + result.totalScore + formatLatestScoreTime(result.latestScoreTime, beginTime)]];
+    } else {
+      values =  [[ 0 ]];
+    }
+    
     for (var n = 0; n < tasks.length; n++) {
       var value = '';
       if (isFinite(result.taskScoreMaxs[tasks[n]])) {
