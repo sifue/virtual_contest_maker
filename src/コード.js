@@ -109,6 +109,9 @@ function updateStatus() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getActiveSheet();
 
+  // 最終更新を設定
+  sheet.getRange('H2').setValue(new Date());
+
   // AtCoderユーザー一覧を作成する
   var valuesParticipant = sheet.getRange('B6:B999').getValues();
   var participants = [];
@@ -191,7 +194,7 @@ function updateStatus() {
 
     // ステータス
     var statuses = [];
-    var statusesRegex = new RegExp('<td class=\'text-center\'><span class=\'.+\' aria-hidden=\'true\' data-toggle=\'tooltip\' data-placement=\'top\' title=".+">(.+)</span></td>', 'g');
+    var statusesRegex = new RegExp('<span class=\'.+\' aria-hidden=\'true\' data-toggle=\'tooltip\' data-placement=\'top\' title=".+">(.+)</span></td>', 'g');
     isEnd = true;
     while (isEnd) {
       var selectedStatus = statusesRegex.exec(contentTasks);
@@ -202,6 +205,7 @@ function updateStatus() {
       }
     }
 
+    // 全部の提出と時間帯にマッチする提出を選択
     var userSubmissions = [];
     var selectedUserSubmissions = [];
     for (var j = 0; j < times.length; j++) {
@@ -229,18 +233,21 @@ function updateStatus() {
     };
 
     // それぞれのスコア最大値やAC以外の数をを計算
-    for (var k = 0; k < submittedTasks.length; k++) {
-      var task = submittedTasks[k];
-      if (!result.taskScoreMaxs[task]) {
-        result.taskScoreMaxs[task] = 0;
-      }
-      if (!result.notAcCounts[task]) {
-        result.notAcCounts[task] = 0;
-      }
+    for (var k = 0; k < tasks.length; k++) {
+      var task = tasks[k];
 
       for (var l = 0; l < selectedUserSubmissions.length; l++) {
         var submission = selectedUserSubmissions[l];
         if (task === submission.task) {
+
+          // 無ければ初期化
+          if (!result.taskScoreMaxs[task]) {
+            result.taskScoreMaxs[task] = 0;
+          }
+          if (!result.notAcCounts[task]) {
+            result.notAcCounts[task] = 0;
+          }
+
           var score = parseInt(submission.score);
           if (score > result.taskScoreMaxs[task]) {
             result.taskScoreMaxs[task] = score;
@@ -279,6 +286,8 @@ function updateStatus() {
 
     // TODO WANT ユーザーごとの更新時間をPropertiesServiceに保存、1分以内のものを無視する
   } // user
+
+  // TODO 一番最初に解けた時間を表示させる
 
   // Logger.log('allSubmissions:');
   // Logger.log(allSubmissions);
