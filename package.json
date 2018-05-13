@@ -1,0 +1,15 @@
+{
+  "name": "virtualt_contest_maker",
+  "version": "1.0.0",
+  "description": "Virtual contest creator with Google App Script for Google Spreadsheet",
+  "main": "コード.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/google-apps-script": "0.0.22"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sifue",
+  "license": "ISC"
+}
