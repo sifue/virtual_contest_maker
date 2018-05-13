@@ -2,7 +2,7 @@
   "name": "virtualt_contest_maker",
   "version": "1.0.0",
   "description": "Virtual contest creator with Google App Script for Google Spreadsheet",
-  "main": "コード.js",
+  "main": "src/コード.js",
   "dependencies": {},
   "devDependencies": {
     "@types/google-apps-script": "0.0.22"
