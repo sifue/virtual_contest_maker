@@ -26,6 +26,7 @@ function createNewVirtualCotest() {
   sheet.getRange('B4').setValue(endTime);
 
   // コンテストの情報の取得して設定する
+  // 例: https://beta.atcoder.jp/contests/abc052/tasks
   var urlTasks = 'https://beta.atcoder.jp/contests/' + contestId + '/tasks';
   var requestTasks = UrlFetchApp.fetch(urlTasks);
   var contentTasks = requestTasks.getContentText();
@@ -142,6 +143,7 @@ function updateStatus() {
   for (var index = 0; index < participants.length; index++) {
     var user = participants[index];
     // 提出を取得する
+    // 例: https://beta.atcoder.jp/contests/abc054/submissions?f.Task=&f.Language=&f.Status=&f.User=sifue
     var urlSubmissions = 'https://beta.atcoder.jp/contests/' + contestId + '/submissions?f.Task=&f.Language=&f.Status=&f.User=' + user;
     var requestSubmissions = UrlFetchApp.fetch(urlSubmissions);
     var contentTasks = requestSubmissions.getContentText();
