@@ -82,6 +82,9 @@ function join() {
   writeRange.setValue(Session.getActiveUser());
   sheet.getRange('H1').setValue(currentParticipantCount + 1);
 
+  // 記入セルを選択
+  sheet.getRange(6 + currentParticipantCount, 2).activate();
+
   Browser.msgBox(Session.getActiveUser() +
     'を追加しました。AtCoder IDをシートに記入してください。', Browser.Buttons.OK);
 }
@@ -285,6 +288,7 @@ function updateStatus() {
     sheet.getRange(6 + index, 3, 1, 1 + tasks.length).setValues(values);
 
     // TODO WANT ユーザーごとの更新時間をPropertiesServiceに保存、1分以内のものを無視する
+    // 今のところ1名5秒程度なので360秒制限は、参加者70名ぐらいにならないと顕在化しなさそう
   } // user
 
   // TODO 一番最初に解けた時間を表示させる
