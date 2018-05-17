@@ -3,7 +3,7 @@
 // Logger.log('hoge'); 
 // の時のログの表示がJSTとなっていることが実行条件となる。
 // バージョン:
-// v1.0.0
+// v1.0.1
 
 /**
  * 作成シートでのコンテスト作成を実行する
@@ -150,9 +150,9 @@ function updateStatus() {
   // 問題一覧を作る
   var valuesTask = sheet.getRange('D5:Z5').getValues();
   var tasks = [];
-  for (var i = 0; i < valuesTask[0].length; i++) {
-    if (valuesTask[0][i]) {
-      tasks.push(valuesTask[0][i]);
+  for (var it = 0; it < valuesTask[0].length; it++) {
+    if (valuesTask[0][it]) {
+      tasks.push(valuesTask[0][it]);
     }
   }
 
@@ -180,26 +180,26 @@ function updateStatus() {
     // 時間を取得
     var times = [];
     var timesRegex = new RegExp('<td class="no-break"><time class=\'fixtime fixtime-second\'>(.+)</time></td>', 'g');
-    var isEnd = true;
-    while (isEnd) {
+    var hasNext = true;
+    while (hasNext) {
       var selectedTime = timesRegex.exec(contentTasks);
       if (selectedTime) {
         times.push(parseDate(selectedTime[1]));
       } else {
-        isEnd = false;
+        hasNext = false;
       }
     }
 
     // 問題を取得
     var submittedTasks = [];
     var submittedTaskssRegex = new RegExp('<td><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>(.+)</a></td>', 'g');
-    isEnd = true;
-    while (isEnd) {
+    hasNext = true;
+    while (hasNext) {
       var selectedTask = submittedTaskssRegex.exec(contentTasks);
       if (selectedTask) {
         submittedTasks.push(selectedTask[1]);
       } else {
-        isEnd = false;
+        hasNext = false;
       }
     }
 
@@ -207,27 +207,27 @@ function updateStatus() {
     var scores = [];
     var ids = [];
     var scoresRegex = new RegExp('<td class="text-right submission-score" data-id="([0-9]+)">([0-9]+)</td>', 'g');
-    isEnd = true;
-    while (isEnd) {
+    hasNext = true;
+    while (hasNext) {
       var selectedScore = scoresRegex.exec(contentTasks);
       if (selectedScore) {
         scores.push(selectedScore[2]);
         ids.push(selectedScore[1]);
       } else {
-        isEnd = false;
+        hasNext = false;
       }
     }
 
     // ステータス
     var statuses = [];
     var statusesRegex = new RegExp('<span class=\'.+\' aria-hidden=\'true\' data-toggle=\'tooltip\' data-placement=\'top\' title=".+">(.+)</span></td>', 'g');
-    isEnd = true;
-    while (isEnd) {
+    hasNext = true;
+    while (hasNext) {
       var selectedStatus = statusesRegex.exec(contentTasks);
       if (selectedStatus) {
         statuses.push(selectedStatus[1]);
       } else {
-        isEnd = false;
+        hasNext = false;
       }
     }
 
@@ -265,8 +265,8 @@ function updateStatus() {
       var task = tasks[k];
 
       for (var l = 0; l < selectedUserSubmissions.length; l++) {
-        var submission = selectedUserSubmissions[l];
-        if (task === submission.task) {
+        var selectedSubmission = selectedUserSubmissions[l];
+        if (task === selectedSubmission.task) {
 
           // 無ければ初期化
           if (!result.taskScoreMaxs[task]) {
@@ -276,13 +276,13 @@ function updateStatus() {
             result.notAcCounts[task] = 0;
           }
 
-          var score = parseInt(submission.score);
+          var score = parseInt(selectedSubmission.score);
           if (score > result.taskScoreMaxs[task]) {
             result.taskScoreMaxs[task] = score;
-            result.taskLatestScoreTime[task] = submission.time;
+            result.taskLatestScoreTime[task] = selectedSubmission.time;
           }
 
-          if (submission.status !== 'AC') {
+          if (selectedSubmission.status !== 'AC') {
             result.notAcCounts[task] += 1;
           }
         }
