@@ -1,6 +1,10 @@
-# Virtual Contest 作成シート
+# AtCoder Virtual Contest 作成シート
 
 AtCoderのバーチャルコンテストを作成してくれるGoogleスプレッドシートのGoogle App Script
+
+### 使い方
+[https://qiita.com/sifue/items/1fef11d9dbc1af541db0](https://qiita.com/sifue/items/1fef11d9dbc1af541db0)
+以上の記事を参照下さい。
 
 ### 要望・不具合
 
