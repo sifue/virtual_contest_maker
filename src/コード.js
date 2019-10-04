@@ -192,7 +192,7 @@ function updateStatus() {
 
     // 問題を取得
     var submittedTasks = [];
-    var submittedTaskssRegex = new RegExp('<td><a href=\'/contests/[a-z0-9_]+/tasks/[a-z0-9_]+\'>(.+)</a></td>', 'g');
+    var submittedTaskssRegex = new RegExp('<td><a href="/contests/[a-z0-9_]+/tasks/[a-z0-9_]+">(.+)</a></td>', 'g');
     hasNext = true;
     while (hasNext) {
       var selectedTask = submittedTaskssRegex.exec(contentTasks);
